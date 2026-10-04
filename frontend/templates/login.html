@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block body %}
+<div id="splash"><div class="rings"><i></i><i></i><i></i></div><div class="sp-logo">EIS</div><div class="sp-t">AI-Driven Early Intervention System</div><div class="sp-bar"><b></b></div></div>
+<div class="authcard" id="s1"><div class="logo">EIS</div><h2>Welcome</h2><p class="sub">Smart Parent Portal for educational institutions.</p><button onclick="show(2)" style="width:100%">Login</button></div>
+<div class="authcard" id="s2" hidden><h2>Login as</h2><p class="sub">Choose how you want to sign in.</p><div class="roles">
+<button onclick="pick('parent')">👪<br>Parent</button><button onclick="pick('advisor')">🎓<br>Class advisor</button><button onclick="pick('faculty')">📚<br>Faculty</button><button onclick="pick('admin')">🛡️<br>Admin</button></div>
+<p><a href="#" onclick="show(1);return false">Back</a></p></div>
+<form method="post" class="authcard" id="s3" hidden><input type="hidden" name="role" id="role" value="{{ role }}"><h2>Login as <span id="rt"></span></h2>
+<label>Email<br><input id="em" name="email" type="email" required></label><br><label>Password<br><input id="pw" name="password" type="password" required></label><br><button style="width:100%;margin-top:8px">Log in</button>
+<p class="sub" style="font-size:.85rem;margin-top:10px"><a href="#" id="demo">Fill demo login</a> · <a href="#" onclick="show(2);return false">Change role</a></p></form>
+<script>const R={parent:['Parent','parent1@demo.com','aarav@101'],advisor:['Class advisor','nair@demo.com','nair@fac1'],faculty:['Faculty','pillai@demo.com','pillai@fac9'],admin:['Admin','admin@demo.com','admin123']},$=i=>document.getElementById(i);
+const show=n=>[1,2,3].forEach(i=>$('s'+i).hidden=i!=n);
+function pick(r){$('role').value=r;$('rt').textContent=R[r][0];$('demo').onclick=()=>{$('em').value=R[r][1];$('pw').value=R[r][2];return false};show(3)}
+const sp=$('splash'),done=()=>{sp.classList.add('out');setTimeout(()=>sp.remove(),700);sessionStorage.setItem('splash',1)};
+if(sessionStorage.getItem('splash'))sp.remove();else setTimeout(done,2900);
+{% if role %}pick('{{ role }}'){% else %}show(1){% endif %}</script>{% endblock %}

@@ -1,0 +1,3 @@
+<div class="card"><h4>Today's attendance</h4>{% if tatt.marked %}<div class="stat">{{ tatt.p|length }} <small>present</small> · {{ tatt.a|length }} <small>absent</small></div>
+<b>Present:</b><div>{% for n in tatt.p %}<span class="tag s chip2">{{ n }}</span>{% endfor %}</div><b>Absent:</b><div>{% for n in tatt.a %}<span class="tag r chip2">{{ n }}</span>{% else %}<span>Nobody</span>{% endfor %}</div>
+{% else %}<p>Attendance for today has not been taken yet.</p>{% endif %}</div>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block body %}
+<div class="banner"><div><h2>Hello, {{ u.name }}</h2><p>{{ s.name }} · {{ s.roll }} · {{ s.class }}</p></div><button class="no-print" onclick="window.print()">Print report</button></div>
+<div class="tiles no-print"><a href="/assistant">Ask AI coach</a><a href="/messages">Message faculty</a><a href="/leave">Request leave</a><a href="/timetable">View timetable</a></div>
+<div class="grid4"><div class="card"><small>Attendance</small><div class="stat">{{ a.att }}%</div><div class="bar"><i style="width:{{ a.att }}%"></i></div><small>Minimum {{ thresh }}%</small></div>
+<div class="card"><small>Average score</small><div class="stat">{{ a.avg }}</div><div class="bar"><i style="width:{{ a.avg }}%"></i></div><small>Weakest: {{ weak }}</small></div>
+<div class="card"><small>Predicted final score</small><div class="stat">{{ a.pred }}</div><div class="bar"><i style="width:{{ a.pred }}%"></i></div><small>XGBoost model</small></div>
+<div class="card"><small>Class rank</small><div class="stat">#{{ rank }}</div><small>of {{ total }} students</small></div></div>
+<div class="card {{ 'risk' if a.risk else 'safe' }}"><h3>{{ 'Needs attention' if a.risk else 'On track' }}</h3>{% for w in a.why %}<div>• {{ w }}</div>{% endfor %}<p><b>AI summary ({{ lang }}):</b> {{ text }}</p></div>
+<div class="grid"><div class="card"><h4>AI study plan</h4><ul class="plan" id="plan"><li>Writing your plan...</li></ul></div>
+<div class="card"><h4>What-if simulator</h4><small>Move the sliders to see how the predicted score changes.</small>
+<label>Attendance <b id="sav">{{ a.att|round|int }}</b>%<input id="sa" type="range" min="0" max="100" value="{{ a.att|round|int }}"></label>
+<label>Average score <b id="smv">{{ a.avg|round|int }}</b><input id="sm" type="range" min="0" max="100" value="{{ a.avg|round|int }}"></label>
+<label>Assignment lateness <b id="slv">{{ a.late|round|int }}</b> days<input id="sl" type="range" min="-2" max="10" value="{{ a.late|round|int }}"></label>
+<div class="big" id="sv">{{ a.pred }}</div><span id="sr" class="tag p">Adjust to simulate</span></div>
+<div class="card"><h4>Attendance calendar (last 42 days)</h4><div class="heat">{% for p in heat %}<i class="{{ 'p' if p }}"></i>{% endfor %}</div><small>Coloured = present, grey = absent</small></div></div>
+<div class="grid"><div class="card" style="text-align:center"><h4>Risk gauge</h4><div style="max-width:170px;margin:auto"><canvas id="g"></canvas></div></div><div class="card"><h4>Weekly attendance</h4><canvas id="t"></canvas></div><div class="card"><h4>Marks by subject</h4><canvas id="b"></canvas></div></div>
+<div class="grid">{% include "_today.html" %}<div class="card"><h4>Smart insights</h4>{% for t,ok in ins %}<div class="note" style="color:{{ '#4a6fa5' if ok else '#b3202a' }}">{{ '▲' if ok else '▼' }} {{ t }}</div>{% endfor %}</div>
+<div class="card"><h4>Goal planner (AI model)</h4><small>What must improve to reach a target final score?</small><br><input id="gt" type="number" min="1" max="100" value="60" style="width:90px"> <button type="button" onclick="goal()">Plan it</button><p id="gr"></p></div></div>
+<div class="grid"><div class="card"><h3>Today's classes ({{ today }})</h3>{% for c in classes %}<div class="note"><b>{{ c.time }}</b> {{ c.subject }} · {{ c.faculty }}</div>{% endfor %}</div>
+<div class="card"><h3>Notifications</h3>{% for x in notes %}<div class="note"><b>Alert</b> {{ x.message }}</div>{% endfor %}{% for l in leaves %}<div class="note"><b>Leave</b> {{ l.from_date }} to {{ l.to_date }}: {{ l.status }}</div>{% endfor %}{% for n in news %}<div class="note"><b>{{ n.title }}</b> {{ n.body }}</div>{% endfor %}</div></div>
+<div class="grid"><div class="card overflow"><h3>Exam marks</h3><table><tr><th>Subject</th><th>Exam</th><th>Score</th></tr>{% for m in marks %}<tr><td>{{ m.subject }}</td><td>{{ m.exam }}</td><td>{{ m.score }}</td></tr>{% endfor %}</table></div>
+<div class="card"><h3>Assignments</h3>{% for x in subs %}<div class="note">{{ x.title }}: {{ (x.days_late ~ ' day(s) late') if x.days_late > 0 else 'On time' }}</div>{% endfor %}</div></div>
+<script>const $=i=>document.getElementById(i),A={{ att|tojson }},M={{ subj|tojson }},Y={scales:{y:{min:0,max:100}},plugins:{legend:{display:false}}};
+new Chart($('g'),{type:'doughnut',data:{datasets:[{data:[{{ a.pred }},{{ 100 - a.pred }}],backgroundColor:['{{ "#b3202a" if a.risk else "#4a6fa5" }}','#f3dede']}]},options:{cutout:'72%'}});
+new Chart($('t'),{type:'line',data:{labels:A.map(x=>'Wk '+x[0]),datasets:[{data:A.map(x=>x[1]),borderColor:'#d64550',tension:.3}]},options:Y});
+new Chart($('b'),{type:'bar',data:{labels:M.map(x=>x[0]),datasets:[{data:M.map(x=>x[1]),backgroundColor:'#f08a8f'}]},options:Y});
+fetch('/api/plan').then(r=>r.json()).then(d=>$('plan').innerHTML=d.lines.map(l=>'<li>'+l+'</li>').join(''));
+function sim(){fetch(`/api/predict?att=${$('sa').value}&avg=${$('sm').value}&late=${$('sl').value}`).then(r=>r.json()).then(d=>{$('sv').textContent=d.pred;$('sr').textContent=d.risk?'At risk':'On track';$('sr').className='tag '+(d.risk?'r':'s')})}
+['sa','sm','sl'].forEach(i=>$(i).oninput=()=>{$({sa:'sav',sm:'smv',sl:'slv'}[i]).textContent=$(i).value;sim()});function goal(){$('gr').textContent='Working...';fetch('/api/goal?target='+$('gt').value).then(r=>r.json()).then(d=>$('gr').textContent=d.text)}</script>{% endblock %}

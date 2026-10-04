@@ -1,0 +1,6 @@
+flask
+xgboost
+numpy
+requests
+twilio
+python-dotenv

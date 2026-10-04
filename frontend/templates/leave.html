@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block body %}<h2>{{ 'Leave requests' if session.role != 'parent' else 'Leave' }}</h2>
+{% if session.role == 'parent' %}<form class="card" method="post"><h4>Request leave for your child</h4><input name="reason" placeholder="Reason" required style="width:60%"><input type="date" name="from_date" required><input type="date" name="to_date" required><button>Send request</button></form>{% endif %}
+<div class="card overflow"><table><tr><th>Student</th><th>Reason</th><th>From</th><th>To</th><th>Status</th>{% if adv %}<th></th>{% endif %}</tr>
+{% for l in rows %}<tr><td>{{ l.name }}</td><td>{{ l.reason }}</td><td>{{ l.from_date }}</td><td>{{ l.to_date }}</td><td><span class="tag {{ 's' if l.status == 'Approved' else 'r' if l.status == 'Rejected' else 'p' }}">{{ l.status }}</span>{% if l.reviewed_by %}<br><small>by {{ l.reviewed_by }}, {{ l.reviewed_on }}</small>{% endif %}</td>
+{% if adv %}<td>{% if l.status == 'Pending' %}<form method="post" action="/leave/{{ l.id }}/Approved" style="display:inline"><button class="ok">Approve</button></form> <form method="post" action="/leave/{{ l.id }}/Rejected" style="display:inline"><button class="del">Reject</button></form>{% endif %}</td>{% endif %}</tr>
+{% else %}<tr><td colspan="6">No leave requests yet.</td></tr>{% endfor %}</table></div>{% endblock %}

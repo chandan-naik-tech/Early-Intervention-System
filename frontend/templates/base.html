@@ -1,0 +1,10 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{ TITLE }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css"><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script></head>
+<body class="{{ '' if session.uid else 'auth' }}">
+{% if session.uid %}{% set P = session.role == 'parent' %}<aside><div class="brand">EIS<small>{{ TITLE }}</small></div><nav>
+<a href="{{ '/parent' if P else '/staff' }}">Dashboard</a>{% if not P %}<a href="/attendance">Take attendance</a><a href="/students">Students</a>{% endif %}{% if admin %}<a href="/users">Users &amp; logins</a>{% endif %}
+<a href="/timetable">Timetable</a>{% if P %}<a href="/assistant">AI coach</a>{% endif %}<a href="/messages">Messages</a><a href="/leave">{{ 'Leave' if P else 'Leave requests' }}</a>
+{% if not P %}<a href="/report.csv">Download class report</a>{% endif %}</nav>
+<div class="me">{{ session.name }}<br><a href="/logout">Log out</a></div></aside>{% endif %}
+<main>{% if session.uid %}{% if sems %}<div class="tabs">{% for n in sems %}<a href="?sem={{ n }}" class="{{ 'on' if n == sem }}">Sem {{ n }}</a>{% endfor %}</div>{% else %}<div class="tabs"><a class="on">Semester {{ sem }} portal</a></div>{% endif %}{% endif %}{% for m in get_flashed_messages() %}<div class="flash">{{ m }}</div>{% endfor %}{% block body %}{% endblock %}</main></body></html>

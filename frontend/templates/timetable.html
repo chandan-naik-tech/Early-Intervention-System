@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<h2>Timetable</h2>{% if not adv and session.role != 'parent' %}<div class="flash">Only the class advisor or admin can change the timetable.</div>{% endif %}
+<div class="card overflow"><table><tr><th>Day</th><th>Time</th><th>Subject</th><th>Faculty</th>{% if adv %}<th></th>{% endif %}</tr>
+{% for r in rows %}<tr><td>{{ r.day }}</td><td>{{ r.time }}</td><td>{{ r.subject }}</td><td>{{ r.faculty }}</td>{% if adv %}<td><form method="post" action="/timetable/delete/{{ r.id }}"><button class="del">Remove</button></form></td>{% endif %}</tr>{% endfor %}</table></div>
+{% if adv %}<form class="card" method="post"><h4>Add a class slot</h4><select name="day"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option></select><input name="time" placeholder="09:00" required><input name="subject" placeholder="Subject" required>
+<select name="faculty">{% for f in fac %}<option>{{ f.name }}</option>{% endfor %}</select><button>Add slot</button></form>{% endif %}{% endblock %}
